@@ -1,0 +1,227 @@
+<html>
+  <head>
+    <title>Haru</title>
+    <style>
+      canvas {
+        border: 1px solid #000000;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  </head>
+<script>
+  var words = ["ابدأ", "(😭 يعني صايد اللغة) شروع کنید", "Start", "Hajimeru"];
+  window.onload = function() {
+    var randomWord = words[Math.floor(Math.random() * words.length)];
+    document.getElementById("start-button").innerHTML = randomWord;
+  }
+  
+  function startGame() { 
+    var randomWord = words[Math.floor(Math.random() * words.length)];
+    document.getElementById("start-button").innerHTML = randomWord;
+  }
+    </script>
+    <button id="start-button" onclick="startGame()">Start</button>
+<h2><p style="color:#FF0000;animation: rainbow 10s linear infinite;">الحين المفروض سهلة 🫵🏻</p></h2>
+
+<style>
+  @keyframes rainbow {
+    0%   {color:#FF0000;}
+    10%  {color:#FF7F00;}
+    20%  {color:#FFFF00;}
+    30%  {color:#00FF00;}
+    40%  {color:#0000FF;}
+    50%  {color:#4B0082;}
+    60%  {color:#9400D3;}
+    70%  {color:#BF40BF;}
+    80%  {color:#FF00FF;}
+    90%  {color:#FF007F;}
+    100% {color:#FF0000;}
+  }
+</style>
+    <canvas id="gameCanvas" width="1150" height="600"></canvas>
+    <script>
+      let canvas;
+      let ctx;
+      let x = 475;
+      let y = 360;
+      let dx = 3;
+      let dy = 6;
+      let PADDLE_WIDTH = 150;
+      let PADDLE_HEIGHT = 10;
+      let paddleX = 500;
+      let rightPressed = false;
+      let leftPressed = false;
+      let brickRowCount = 10;
+      let brickColumnCount = 13;
+      let brickWidth = 75;
+      let brickHeight = 20;
+      let brickPadding = 10;
+      let brickOffsetTop = 30;
+      let brickOffsetLeft = 30;
+      let bricks = [];
+      let score = 0;
+      let lives = 2;
+
+      document.addEventListener("keydown", keyDownHandler, false);
+      document.addEventListener("keyup", keyUpHandler, false);
+
+      for (let c = 0; c < brickColumnCount; c++) {
+        bricks[c] = [];
+        for (let r = 0; r < brickRowCount; r++) {
+          bricks[c][r] = { x: 0, y: 0, status: 1 };
+        }
+      }
+
+      function keyDownHandler(e) {
+        if (e.keyCode == 39) {
+          rightPressed = true;
+        } else if (e.keyCode == 37) {
+          leftPressed = true;
+        }
+      }
+
+      function keyUpHandler(e) {
+        if (e.keyCode == 39) {
+          rightPressed = false;
+        } else if (e.keyCode == 37) {
+          leftPressed = false;
+        }
+      }
+
+
+      function startGame() {
+        canvas = document.getElementById("gameCanvas");
+        ctx = canvas.getContext("2d");
+        document.addEventListener("mousemove", mouseMoveHandler, false);
+        setInterval(draw, 10);
+      }
+
+
+      function mouseMoveHandler(e) {
+        let relativeX = e.clientX - canvas.offsetLeft;
+        if (relativeX > 0 && relativeX < canvas.width) {
+          paddleX = relativeX - PADDLE_WIDTH / 2;
+        }
+      }
+
+      function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(
+          paddleX,
+          canvas.height - PADDLE_HEIGHT,
+          PADDLE_WIDTH,
+          PADDLE_HEIGHT
+        );
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      function drawBricks() {
+        for (let c = 0; c < brickColumnCount; c++) {
+          for (let r = 0; r < brickRowCount; r++) {
+            if (bricks[c][r].status == 1) {
+              let brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
+              let brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
+              bricks[c][r].x = brickX;
+              bricks[c][r].y = brickY;
+              ctx.beginPath();
+              ctx.rect(brickX, brickY, brickWidth, brickHeight);
+              ctx.fillStyle = "#0095DD";
+              ctx.fill();
+              ctx.closePath();
+            }
+          }
+        }
+      }
+
+      function drawScore() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#0095DD";
+        ctx.fillText("Score: " + score, 8, 20);
+      }
+
+      function drawLives() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#0095DD";
+        ctx.fillText("Lives: " + lives, canvas.width - 65, 20);
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBricks();
+        drawBall();
+        drawPaddle();
+        drawScore();
+        drawLives();
+        collisionDetection();
+
+        if (x + dx > canvas.width - 10 || x + dx < 10) {
+          dx = -dx;
+        }
+        if (y + dy < 10) {
+          dy = -dy;
+        } else if (y + dy > canvas.height - 10) {
+          if (x > paddleX && x < paddleX + PADDLE_WIDTH) {
+            dy = -dy;
+          } else {
+            lives--;
+            if (!lives) {
+              var alerts = ["Ezz 🫣","مستوى مستوى🤨","ترا سهلة 🫠                                    او يمكن لا 🏃🏻","نووبه🦦","2GB 🫣","الكود الثاني: 6T8DS4G8LR55 🫴🏻","يو آر سمبوسة جبن🫵🏻","https://bit.ly/haru_gift","الكود الأول: GB9UB9PXSSTZ 🫴🏻","2GB 🫵🏻","جمعة مباركة x ∞ 🤍✨", "كل عام وانتِ بخير، آنسة هارو"];
+              alert(alerts[Math.floor(Math.random() * alerts.length)]);
+              document.location.reload();
+            } else {
+              x = canvas.width / 2;
+              y = canvas.height - 30;
+              dx = 8;
+              dy = -9;
+              paddleX = (canvas.width - PADDLE_WIDTH) / 2;
+            }
+          }
+        }
+
+        if (rightPressed && paddleX < canvas.width - PADDLE_WIDTH) {
+          paddleX += 7;
+        } else if (leftPressed && paddleX > 0) {
+          paddleX -= 7;
+        }
+
+        x += dx;
+        y += dy;
+      }
+
+      function collisionDetection() {
+        for (let c = 0; c < brickColumnCount; c++) {
+          for (let r = 0; r < brickRowCount; r++) {
+            let b = bricks[c][r];
+            if (b.status == 1) {
+              if (
+                x > b.x &&
+                x < b.x + brickWidth &&
+                y > b.y &&
+                y < b.y + brickHeight
+              ) {
+                dy = -dy;
+                b.status = 0;
+                score++;
+                if (score == brickRowCount * brickColumnCount) {
+                  var alerts = ["مبروك 🫡 Email: 1haru.32100@gmail.com", "آخيرًا، مبروك امسكي 🫡 Password: Kawaiichan73"];
+                  alert(alerts[Math.floor(Math.random() * alerts.length)]);
+                  document.location.reload();
+                }
+              }
+            }
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
